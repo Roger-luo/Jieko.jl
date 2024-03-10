@@ -31,4 +31,6 @@ end # TestJieko
 @testset "Jieko" begin
     @test names(TestJieko.Prelude) == [:Prelude, :foo]
     @test names(TestJieko) == [:TestJieko]
+    md = @doc(TestJieko.foo)
+    @test md.content[1].content[1].content[1].code == "public Main.TestJieko.foo(x::Float64) -> Int"
 end # @testset "Jieko"
