@@ -5,7 +5,7 @@
 [![][docs-stable-img]][docs-stable-url]
 [![][docs-dev-img]][docs-dev-url]
 
-Provides a macro marking interface as well as the interface type signatures. Integrated with DocStringExtension.
+Documentation as interfaces. Julia uses docstrings to define interfaces. This is a flexible way of creating interfaces in a dynamic language, but also creates trouble for automation and tooling. Jieko is a package that provides a infrastructure for defining interfaces that works with DocStringExtension with precisely the signature of the interface.
 
 ## Installation
 
@@ -24,6 +24,51 @@ Jieko is a &nbsp;
 ```julia
 pkg> add Jieko
 ```
+
+## Example
+
+You only need to use the `@interface` macro and if you have [DocStringExtensions](https://github.com/JuliaDocs/DocStringExtensions.jl) setup, you can use the `INTERFACE` stub to generate the interface definition in the docstring similar to the `SIGNATURES` for methods.
+
+```julia
+using Jieko: @interface, INTERFACE
+
+"""
+$INTERFACE
+
+my lovely interface
+"""
+@interface jieko(x::Real) = x
+```
+
+we can also compare with the `SIGNATURES` from `DocStringExtensions`:
+
+```julia
+using DocStringExtensions: SIGNATURES
+
+"""
+$SIGNATURES
+
+my lovely method
+"""
+doc_string_ext(x::Real) = x
+```
+
+they result in the following
+
+```julia
+help?> TestReadmeExample.goo
+  goo(x)
+  
+
+  my lovely method
+
+help?> TestReadmeExample.foo
+  public Main.TestReadmeExample.foo(x::Real)
+
+  my lovely interface
+```
+
+In summary, the `@interface` macro from Jieko records the precise interface signature of your definition in the docstring, instead of guessing them from Julia's method table (`SIGNATURES`).
 
 ## License
 

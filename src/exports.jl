@@ -17,7 +17,11 @@ macro export_all_interfaces()
     return esc(export_all_interfaces_m(__module__))
 end
 
-function export_all_interfaces_m(mod::Module)
+macro export_all_interfaces(extras)
+    return esc(export_all_interfaces_m(__module__, collect_names(extras)))
+end
+
+function export_all_interfaces_m(mod::Module, extras::Vector{Symbol}=Symbol[])
     isdefined(mod, INTERFACE_STUB) || return nothing
     stub = getfield(mod, INTERFACE_STUB)
     stmts = expr_map(stub) do (name, method)
@@ -26,5 +30,32 @@ function export_all_interfaces_m(mod::Module)
             export $(method.name)
         end
     end
-    return Expr(:toplevel, Expr(:module, true, :Prelude, stmts))
+
+    extra_stmts = expr_map(extras) do name
+        quote
+            using ..$(nameof(mod)): $name
+            export $(name)
+        end
+    end
+
+    return Expr(:toplevel, Expr(:module, true, :Prelude, quote
+        $stmts
+        $extra_stmts
+    end))
+end
+
+function collect_names(extras::Expr)::Vector{Symbol}
+    Meta.isexpr(extras, :block) || throw(ArgumentError("expect begin ... end"))
+
+    names = Vector{Symbol}()
+    for stmt in extras.args
+        stmt isa LineNumberNode && continue
+        stmt isa Symbol && push!(names, stmt)
+        Meta.isexpr(stmt, :macrocall) && if length(stmt.args) == 2
+            push!(names, stmt.args[1])
+        else
+            throw(ArgumentError("expect @<macro_name>"))
+        end
+    end
+    return names
 end

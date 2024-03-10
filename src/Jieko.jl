@@ -10,6 +10,11 @@ include("doc.jl")
 include("exports.jl")
 include("reflect.jl")
 
-# @export_all_interfaces
+@export_all_interfaces begin
+    @interface
+    @export_all_interfaces
+    INTERFACE
+    INTERFACE_LIST
+end
 
 end # Jieko

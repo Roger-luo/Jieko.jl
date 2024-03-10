@@ -47,3 +47,24 @@ end # TestEmpty
     @test isempty(interfaces(TestEmptyModule))
     #TODO: add more specific tests for this
 end # @testset "Jieko"
+
+
+module TestReadmeExample
+using Jieko: @interface, INTERFACE
+using DocStringExtensions: SIGNATURES
+
+"""
+$INTERFACE
+
+my lovely interface
+"""
+@interface jieko(x::Real) = x
+
+"""
+$SIGNATURES
+
+my lovely method
+"""
+doc_string_ext(x::Real) = x
+
+end # TestReadmeExample
