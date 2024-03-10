@@ -172,10 +172,9 @@ function interface_m(mod::Module, fn)
 end
 
 function emit_public(mod::Module, jl::JLFunction)
+    # see JuliaLang/julia/issues/51450
     @static if VERSION > v"1.11-"
-        return quote
-            public $(jl.name)
-        end
+        return Expr(:public, jl.name)
     else
         return
     end
