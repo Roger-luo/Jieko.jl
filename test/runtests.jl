@@ -1,6 +1,6 @@
 using Test
 using ExproniconLite: NoDefault, no_default
-using Jieko: Jieko, InterfaceMethod, TypeAnnotation, WhereParam, @interface, INTERFACE
+using Jieko: Jieko, InterfaceMethod, TypeAnnotation, WhereParam, @interface, INTERFACE, interfaces
 
 mt = InterfaceMethod(
     mod = Main,
@@ -31,6 +31,9 @@ $INTERFACE
 # @show @macroexpand(@export_all_interfaces)
 end # TestJieko
 
+module TestEmptyModule
+end # TestEmpty
+
 @testset "Jieko" begin
     @test names(TestJieko.Prelude) == [:Prelude, :foo]
     @test names(TestJieko) == [:TestJieko]
@@ -39,4 +42,8 @@ end # TestJieko
 
     md = @doc(TestJieko)
     md.content[1].content[1].content[2].code == "Main.TestJieko.foo(x::Float64) -> Int"
+
+    @test interfaces(TestJieko) isa Dict
+    @test isempty(interfaces(TestEmptyModule))
+    #TODO: add more specific tests for this
 end # @testset "Jieko"
