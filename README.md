@@ -5,7 +5,9 @@
 [![][docs-stable-img]][docs-stable-url]
 [![][docs-dev-img]][docs-dev-url]
 
-Documentation as interfaces. Julia uses docstrings to define interfaces. This is a flexible way of creating interfaces in a dynamic language, but also creates trouble for automation and tooling. Jieko is a package that provides a infrastructure for defining interfaces that works with DocStringExtension with precisely the signature of the interface.
+Documentation as interfaces. 接口(Jiekou) is the Chinese word for Interfaces. This one works with the `public` keyword.
+
+Julia uses docstrings to define interfaces. This is a flexible way of creating interfaces in a dynamic language, but also creates trouble for automation and tooling. Jieko is a package that provides a infrastructure for defining interfaces that works with DocStringExtension with precisely the signature of the interface.
 
 ## Installation
 
