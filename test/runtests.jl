@@ -16,8 +16,11 @@ mt = InterfaceMethod(
 
 show(devnull, mt) # for the sake of test coverage
 
+"""
+$INTERFACE_LIST
+"""
 module TestJieko
-using Jieko: INTERFACE, @interface, @export_all_interfaces
+using Jieko: INTERFACE, INTERFACE_LIST, @interface, @export_all_interfaces
 
 """
 $INTERFACE
@@ -33,4 +36,7 @@ end # TestJieko
     @test names(TestJieko) == [:TestJieko]
     md = @doc(TestJieko.foo)
     @test md.content[1].content[1].content[1].code == "public Main.TestJieko.foo(x::Float64) -> Int"
+
+    md = @doc(TestJieko)
+    md.content[1].content[1].content[2].code == "Main.TestJieko.foo(x::Float64) -> Int"
 end # @testset "Jieko"
