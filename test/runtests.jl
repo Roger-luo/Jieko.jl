@@ -2,8 +2,7 @@ using Test
 using ExproniconLite: NoDefault, no_default
 using Jieko: Jieko, InterfaceMethod, TypeAnnotation, WhereParam, @interface, INTERFACE
 
-
-InterfaceMethod(
+mt = InterfaceMethod(
     mod = Main,
     name = :sin,
     arg_names = [:x, :y],
@@ -15,11 +14,7 @@ InterfaceMethod(
     return_type = TypeAnnotation(:Int, "Int64"),
 )
 
-"""
-$INTERFACE
-"""
-@interface foo(x::Float64)::Int = 2
-
+show(devnull, mt) # for the sake of test coverage
 
 module TestJieko
 using Jieko: INTERFACE, @interface, @export_all_interfaces
@@ -33,3 +28,7 @@ $INTERFACE
 # @show @macroexpand(@export_all_interfaces)
 end # TestJieko
 
+@testset "Jieko" begin
+    @test names(TestJieko.Prelude) == [:Prelude, :foo]
+    @test names(TestJieko) == [:TestJieko]
+end # @testset "Jieko"
