@@ -2,7 +2,7 @@ using Documenter
 using Jieko
 using DocThemeIndigo
 
-indigo = DocThemeIndigo.install(Configurations)
+indigo = DocThemeIndigo.install(Jieko)
 
 makedocs(;
     modules = [Jieko],
