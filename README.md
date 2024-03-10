@@ -1,5 +1,8 @@
 # Jieko
 
+[![CI](https://github.com/Roger-luo/Jieko.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/Roger-luo/Jieko.jl/actions/workflows/CI.yml)
+[![codecov](https://codecov.io/gh/Roger-luo/Jieko.jl/graph/badge.svg?token=8EIbN4OPo2)](https://codecov.io/gh/Roger-luo/Jieko.jl)
+
 Provides a macro marking interface as well as the interface type signatures. Integrated with DocStringExtension.
 
 ## Installation
