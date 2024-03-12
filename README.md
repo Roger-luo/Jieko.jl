@@ -58,19 +58,25 @@ doc_string_ext(x::Real) = x
 they result in the following
 
 ```julia
-help?> TestReadmeExample.goo
-  goo(x)
+help?> doc_string_ext
+search: doc_string_ext
+
+  doc_string_ext(x)
   
 
   my lovely method
 
-help?> TestReadmeExample.foo
-  public Main.TestReadmeExample.foo(x::Real)
+help?> jieko
+search: jieko TestJieko
+
+  public Main.jieko(x::Real)
 
   my lovely interface
 ```
 
-In summary, the `@interface` macro from Jieko records the precise interface signature of your definition in the docstring, instead of guessing them from Julia's method table (`SIGNATURES`).
+In summary, the `@interface` macro from Jieko records the precise interface signature of your definition in the docstring, instead of guessing them from Julia's method table (`SIGNATURES`). `DocStringExtensions` plugins are provided via `INTERFACE` and `INTERFACE_LIST` to generate the interface definition in the docstring.
+
+See the [documentation](https://Roger-luo.github.io/Jieko.jl/dev/) for more details.
 
 ## License
 
