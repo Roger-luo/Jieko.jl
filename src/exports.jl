@@ -39,6 +39,8 @@ function export_all_interfaces_m(mod::Module, extras::Vector{Symbol}=Symbol[])
     end
 
     return Expr(:toplevel, Expr(:module, true, :Prelude, quote
+        using ..$(nameof(mod)): $(nameof(mod))
+        export $(nameof(mod))
         $stmts
         $extra_stmts
     end))
