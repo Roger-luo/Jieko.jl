@@ -45,10 +45,10 @@ end # TestEmpty
     end
 
     md = @doc(TestJieko.foo)
-    @test md.content[1].content[1].content[1].code == "public Main.TestJieko.foo(x::Float64) -> Int"
+    @test contains(sprint(show, md), "public Main.TestJieko.foo(x::Float64) -> Int")
 
     md = @doc(TestJieko)
-    md.content[1].content[1].content[2].code == "Main.TestJieko.foo(x::Float64) -> Int"
+    @test contains(sprint(show, md), "Main.TestJieko.foo(x::Float64) -> Int")
 
     @test interfaces(TestJieko) isa Dict
     @test isempty(interfaces(TestEmptyModule))
