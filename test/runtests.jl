@@ -36,7 +36,14 @@ end # TestEmpty
 
 @testset "Jieko" begin
     @test names(TestJieko.Prelude) == [:Prelude, :TestJieko, :foo]
-    @test names(TestJieko) == [:TestJieko]
+
+    @static if VERSION > v"1.12-"
+        # interface is public
+        @test names(TestJieko) == [:TestJieko, :foo]
+    else
+        @test names(TestJieko) == [:TestJieko]
+    end
+
     md = @doc(TestJieko.foo)
     @test md.content[1].content[1].content[1].code == "public Main.TestJieko.foo(x::Float64) -> Int"
 
