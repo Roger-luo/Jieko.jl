@@ -1,9 +1,11 @@
 """
-    @export_all_interfaces
+    @export_all_interfaces <begin ... end>
 
 Wrap all interfaces from the module in which this macro is called in a `Prelude` module
 and export them. This is useful for exporting all interfaces from a module to be used
 in other modules.
+
+Optionally, you can pass a list of extra symbols to be exported along with the interfaces.
 
 The concept of `Prelude` is borrowed from rust, where it is used to give users an explicit
 way to import all the symbols from a package. This is useful for the package authors to
@@ -12,6 +14,25 @@ without giving them the easy way of importing everything from the package via `u
 
 Because `Prelude` module only contains the API symbols, it makes it easier for the toolchain
 to check the APIs without mixing them with the implementation details.
+
+# Example
+
+```julia
+module MyModule
+using Jieko.Prelude # load everything you need from Jieko
+
+@interface foo(x::Float64)::Int = 2
+
+# export interface `foo` and some extra symbols
+@export_all_interfaces begin
+    @interface
+    @export_all_interfaces
+    INTERFACE
+    INTERFACE_LIST
+    not_implemented_error
+end
+end
+```
 """
 macro export_all_interfaces()
     return esc(export_all_interfaces_m(__module__))
