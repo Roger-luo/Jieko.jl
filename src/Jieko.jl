@@ -1,5 +1,9 @@
 module Jieko
 
+if VERSION < v"1.9-"
+    using Base: @kwdef
+end
+
 using ExproniconLite: NoDefault, no_default, JLFunction, name_only, expr_map
 using DocStringExtensions: DocStringExtensions, Abbreviation, SIGNATURES, TYPEDEF
 

@@ -21,25 +21,33 @@ macro export_all_interfaces(extras)
     return esc(export_all_interfaces_m(__module__, collect_names(extras)))
 end
 
+function relative_using(parent::Symbol, names::Symbol...)
+    body = Expr(:(:), Expr(:., :., :., parent))
+    for name in names
+        push!(body.args, Expr(:., name))
+    end
+    return Expr(:using, body)
+end
+
 function export_all_interfaces_m(mod::Module, extras::Vector{Symbol}=Symbol[])
     isdefined(mod, INTERFACE_STUB) || return nothing
     stub = getfield(mod, INTERFACE_STUB)
     stmts = expr_map(stub) do (name, method)
         quote
-            using ..$(nameof(mod)): $(method.name)
+            $(relative_using(nameof(mod), method.name))
             export $(method.name)
         end
     end
 
     extra_stmts = expr_map(extras) do name
         quote
-            using ..$(nameof(mod)): $name
+            $(relative_using(nameof(mod), name))
             export $(name)
         end
     end
 
     return Expr(:toplevel, Expr(:module, true, :Prelude, quote
-        using ..$(nameof(mod)): $(nameof(mod))
+        $(relative_using(nameof(mod), nameof(mod)))
         export $(nameof(mod))
         $stmts
         $extra_stmts
