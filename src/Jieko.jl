@@ -7,7 +7,7 @@ if VERSION < v"1.9-"
     using Base: @kwdef
 end
 
-using ExproniconLite: NoDefault, no_default, xcall, name_only, expr_map, split_function, is_function, split_signature
+using ExproniconLite: xcall, name_only, expr_map, split_function, is_function, split_signature
 using DocStringExtensions: DocStringExtensions, Abbreviation, SIGNATURES, TYPEDEF, methodgroups
 
 const JIEKO_STUB = Symbol("##Jieko#STUB#")
@@ -21,6 +21,7 @@ include("doc.jl")
 include("pub.jl")
 include("exports.jl")
 include("reflect.jl")
+include("err.jl")
 
 var"##Jieko#STUB#"[Symbol("@pub")] = CapturedMacro(Jieko, Symbol("@pub"), "@pub <definition>")
 var"##Jieko#STUB#"[:DEF] = CapturedConst(Jieko, :DEF, "DEF")
@@ -33,17 +34,5 @@ var"##Jieko#STUB#"[:DEFLIST] = CapturedConst(Jieko, :DEFLIST, "DEFLIST")
 end
 
 @prelude_module
-
-# include("exports.jl")
-# include("reflect.jl")
-# include("err.jl")
-
-# @export_all_interfaces begin
-#     @interface
-#     @export_all_interfaces
-#     INTERFACE
-#     INTERFACE_LIST
-#     not_implemented_error
-# end
 
 end # Jieko

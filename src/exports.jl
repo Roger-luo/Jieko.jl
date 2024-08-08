@@ -33,10 +33,6 @@ end
     return esc(prelude_module_m(__module__))
 end
 
-# macro prelude_module(extras)
-#     return esc(prelude_module_m(__module__, collect_names(extras)))
-# end
-
 function relative_using(parent::Symbol, names::Symbol...)
     body = Expr(:(:), Expr(:., :., :., parent))
     for name in names
@@ -45,8 +41,8 @@ function relative_using(parent::Symbol, names::Symbol...)
     return Expr(:using, body)
 end
 
-function prelude_module_m(mod::Module, extras::Vector{Symbol}=Symbol[])
-    isdefined(mod, JIEKO_STUB) || return nothing
+function prelude_module_m(mod::Module)
+    isdefined(mod, JIEKO_STUB) || return xbaremodule(:Prelude, quote end)
     stub = getfield(mod, JIEKO_STUB)::JiekoStub
     stmts = expr_map(allcaptured(stub)) do captured
         quote
@@ -55,12 +51,14 @@ function prelude_module_m(mod::Module, extras::Vector{Symbol}=Symbol[])
         end
     end
 
-    extra_stmts = expr_map(extras) do name
-        quote
-            $(relative_using(nameof(mod), name))
-            export $(name)
-        end
-    end
+    return Expr(:block,
+        xbaremodule(:Prelude, quote
+            $(relative_using(nameof(mod), nameof(mod)))
+            export $(nameof(mod))
+            $stmts
+        end),
+        emit_public(:Prelude),
+    )
 
     return Expr(:block,
         Expr(:toplevel, Expr(:module, true, :Prelude, quote
@@ -73,18 +71,6 @@ function prelude_module_m(mod::Module, extras::Vector{Symbol}=Symbol[])
     )
 end
 
-function collect_names(extras::Expr)::Vector{Symbol}
-    Meta.isexpr(extras, :block) || throw(ArgumentError("expect begin ... end"))
-
-    names = Vector{Symbol}()
-    for stmt in extras.args
-        stmt isa LineNumberNode && continue
-        stmt isa Symbol && push!(names, stmt)
-        Meta.isexpr(stmt, :macrocall) && if length(stmt.args) == 2
-            push!(names, stmt.args[1])
-        else
-            throw(ArgumentError("expect @<macro_name>"))
-        end
-    end
-    return names
+function xbaremodule(name::Symbol, stmts::Expr)
+    Expr(:toplevel, Expr(:module, true, :Prelude, stmts))
 end

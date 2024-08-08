@@ -1,6 +1,6 @@
 /.vscode
 **/**/**.cov
-
+/coverage
 /Manifest.toml
 /docs/build/
 /docs/Manifest.toml

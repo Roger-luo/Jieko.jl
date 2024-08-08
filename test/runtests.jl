@@ -1,77 +1,78 @@
 using Test
-using ExproniconLite: NoDefault, no_default
-using Jieko: Jieko, InterfaceMethod, TypeAnnotation, WhereParam, @interface, INTERFACE, interfaces
+using REPL # need to load this module to make docstring rendering behavior consistent after v1.11
+using Jieko: Jieko
 
-mt = InterfaceMethod(
-    mod = Main,
-    name = :sin,
-    arg_names = [:x, :y],
-    arg_types = [TypeAnnotation(:Int, "Int64"), nothing],
-    kwargs_names = [:z],
-    kwargs_types = [TypeAnnotation(:Int, "Int64")],
-    kwargs_defaults = [no_default],
-    where_params = [WhereParam(:T, TypeAnnotation(:Int, "Int64"))],
-    return_type = TypeAnnotation(:Int, "Int64"),
-)
+module Example
+include("example/basic.jl")
+include("example/readme.jl")
+include("example/empty.jl")
+end # module
 
-show(devnull, mt) # for the sake of test coverage
+@testset "err" begin
+    @test_throws Jieko.NotImplementedError Jieko.not_implemented_error()
+    @test contains(sprint(showerror, Jieko.NotImplementedError()), "Not implemented yet")
+end
 
-"""
-$INTERFACE_LIST
-"""
-module TestJieko
-using Jieko: INTERFACE, INTERFACE_LIST, @interface, @export_all_interfaces
-
-"""
-$INTERFACE
-"""
-@interface foo(x::Float64)::Int = 2
-
-@export_all_interfaces
-# @show @macroexpand(@export_all_interfaces)
-end # TestJieko
-
-module TestEmptyModule
-end # TestEmpty
-
-@testset "Jieko" begin
-    @test names(TestJieko.Prelude) == [:Prelude, :TestJieko, :foo]
-
-    @static if VERSION > v"1.12-"
+@testset "names" begin
+    @static if VERSION > v"1.11-"
         # interface is public
-        @test names(TestJieko) == [:TestJieko, :foo]
+        @test names(Example.Basic) == [Symbol("@goo"), Symbol("@moo"), :Basic, :Foo, :Prelude, :X, :foo]
     else
-        @test names(TestJieko) == [:TestJieko]
+        @test names(Example.Basic) == [:Basic]
     end
 
-    md = @doc(TestJieko.foo)
-    @test contains(sprint(show, md), "public Main.TestJieko.foo(x::Float64) -> Int")
+    @test names(Example.Basic.Prelude) == [Symbol("@goo"), Symbol("@moo"), :Basic, :Foo, :Prelude, :X, :foo]
+    @test names(Example.EmptyPrelude.Prelude) == [:Prelude]
+    @test names(Example.Empty) == [:Empty]
+    stub = Jieko.stub(Example.Empty)
+    @test isempty(stub.macros)
+    @test isempty(stub.interface)
+    stub = Jieko.stub(Example.Basic)
+    @test !isempty(stub.macros)
+    @test !isempty(stub.interface)
+end
 
-    md = @doc(TestJieko)
-    @test contains(sprint(show, md), "Main.TestJieko.foo(x::Float64) -> Int")
+@testset "doc" begin
+    @test contains(sprint(show, @doc(Example.Basic.@goo)), "@goo <x::Int> <y::String> <zs>...")
+    @test contains(sprint(show, @doc(Example.Basic.@moo)), "@moo <x::Int> [<y::String> = \"aaa\"]")
+    @test contains(sprint(show, @doc(Example.Basic.Foo)), "struct Foo <: Real")
+    @test contains(sprint(show, @doc(Example.Basic.foo)), "foo(x::Float64) -> Int")
+    @test contains(sprint(show, @doc(Example.Basic.X)), "X")
+    @test contains(
+        sprint(show, @doc(Example.Basic)),
+        """### Prelude
 
-    @test interfaces(TestJieko) isa Dict
-    @test isempty(interfaces(TestEmptyModule))
-    #TODO: add more specific tests for this
-end # @testset "Jieko"
+Contains Main.Example.Basic.Prelude, all public definitions can be imported by `using Main.Example.Basic.Prelude`.
 
+### Definitions
 
-module TestReadmeExample
-using Jieko: @interface, INTERFACE
-using DocStringExtensions: SIGNATURES
+#### Constants
 
-"""
-$INTERFACE
+```julia
+X
+```
 
-my lovely interface
-"""
-@interface jieko(x::Real) = x
+#### Macros
 
-"""
-$SIGNATURES
+```julia
+@goo <x::Int> <y::String> <zs>...
+```
 
-my lovely method
-"""
-doc_string_ext(x::Real) = x
+```julia
+@moo <x::Int> [<y::String> = "aaa"]
+```
 
-end # TestReadmeExample
+#### Structs
+
+```julia
+struct Foo <: Real
+```
+
+#### Interfaces
+
+```julia
+foo(x::Float64) -> Int
+```
+""")
+
+end # @testset "doc"

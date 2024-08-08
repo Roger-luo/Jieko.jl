@@ -1,4 +1,8 @@
 # DocStringExtensions plugin
+function codeblock(code)
+    return "```julia\n$code\n```\n"
+end
+
 struct DefSignature <: Abbreviation end
 
 """
@@ -22,17 +26,17 @@ function DocStringExtensions.format(::DefSignature, buf, doc)
 
     name = binding.var
     if haskey(stub.consts, name)
-        return print(buf, "    ", stub.consts[name].doc)
+        return print(buf, codeblock(stub.consts[name].doc))
     elseif haskey(stub.macros, name)
-        return print(buf, "    ", stub.macros[name].doc)
+        return print(buf, codeblock(stub.macros[name].doc))
     elseif haskey(stub.structs, name)
-        return print(buf, "    ", stub.structs[name].doc)
+        return print(buf, codeblock(stub.structs[name].doc))
     end
 
     typesig <: Tuple || error("expected typesig, got $typesig")
     type = Tuple{typeof(object),typesig.parameters...}
     for (t, method) in stub.interface
-        type <: t && return print(buf, "    ", method.doc)
+        type <: t && return print(buf, codeblock(method.doc))
     end
     error("expected @pub on method $type in $mod")
 end
@@ -72,28 +76,28 @@ function DocStringExtensions.format(::DefList, buf, doc)
     if !isempty(stub.consts)
         println(buf, "#### Constants\n\n")
         for (name, captured) in stub.consts
-            println(buf, "    ", captured.doc)
+            println(buf, codeblock(captured.doc))
         end
     end
 
     if !isempty(stub.macros)
         println(buf, "#### Macros\n\n")
         for (name, captured) in stub.macros
-            println(buf, "    ", captured.doc)
+            println(buf, codeblock(captured.doc))
         end
     end
 
     if !isempty(stub.structs)
         println(buf, "#### Structs\n\n")
         for (name, captured) in stub.structs
-            println(buf, "    ", captured.doc)
+            println(buf, codeblock(captured.doc))
         end
     end
 
     if !isempty(stub.interface)
         println(buf, "#### Interfaces\n\n")
         for (type, captured) in stub.interface
-            println(buf, "    ", captured.doc)
+            println(buf, codeblock(captured.doc))
         end
     end
 end # format
