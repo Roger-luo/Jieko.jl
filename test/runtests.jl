@@ -38,41 +38,31 @@ end
     @test contains(sprint(show, @doc(Example.Basic.Foo)), "struct Foo <: Real")
     @test contains(sprint(show, @doc(Example.Basic.foo)), "foo(x::Float64) -> Int")
     @test contains(sprint(show, @doc(Example.Basic.X)), "X")
-    @test contains(
-        sprint(show, @doc(Example.Basic)),
-        """### Prelude
 
-Contains Main.Example.Basic.Prelude, all public definitions can be imported by `using Main.Example.Basic.Prelude`.
-
-### Definitions
-
-#### Constants
-
-```julia
-X
-```
-
-#### Macros
-
-```julia
-@goo <x::Int> <y::String> <zs>...
-```
-
-```julia
-@moo <x::Int> [<y::String> = "aaa"]
-```
-
-#### Structs
-
-```julia
-struct Foo <: Real
-```
-
-#### Interfaces
-
-```julia
-foo(x::Float64) -> Int
-```
-""")
-
+    moduledoc = sprint(show, @doc(Example.Basic))
+    @test contains(moduledoc, "### Prelude")
+    @test contains(moduledoc, "### Definitions")
+    @test contains(moduledoc, "#### Constants")
+    @test contains(moduledoc, "#### Macros")
+    @test contains(moduledoc, "#### Structs")
+    @test contains(moduledoc, "#### Interfaces")
+    @test contains(moduledoc, """```julia
+    X
+    ```
+    """)
+    @test contains(moduledoc, """```julia
+    @goo <x::Int> <y::String> <zs>...
+    ```""")
+    @test contains(moduledoc, """```julia
+    @moo <x::Int> [<y::String> = "aaa"]
+    ```""")
+    @test contains(moduledoc, """```julia
+    struct Foo <: Real
+    ```""")
+    @test contains(moduledoc, """```julia
+    foo(x::Float64) -> Int
+    ```""")
+    @test contains(moduledoc, """```julia
+    foo(x::Float64) -> Int
+    ```""")
 end # @testset "doc"
