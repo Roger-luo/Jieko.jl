@@ -1,52 +1,99 @@
 # DocStringExtensions plugin
-struct InterfaceSignature <: Abbreviation end
+struct DefSignature <: Abbreviation end
 
 """
-    const INTERFACE = InterfaceSignature()
+$(DefSignature())
 
-Similar to `SIGNATURES` but has more precise method
-information obtained directly from the [`@interface`](@ref)
+Similar to `SIGNATURES` but has more precise method/struct
+information obtained directly from the [`@pub`](@ref)
 macro.
 """
-const INTERFACE = InterfaceSignature()
+const DEF = DefSignature()
 
-function DocStringExtensions.format(::InterfaceSignature, buf, doc)
+function DocStringExtensions.format(::DefSignature, buf, doc)
     binding = doc.data[:binding]
+    typesig = doc.data[:typesig]
+    mod = doc.data[:module]
     object = Docs.resolve(binding)
-    mod = parentmodule(object)
-    if !isdefined(mod, INTERFACE_STUB)
-        return nothing
+    if !isdefined(mod, JIEKO_STUB)
+        error("expected @pub in $mod")
     end
-    stub = getfield(mod, INTERFACE_STUB)
-    haskey(stub, nameof(object)) || return nothing
-    interface = stub[nameof(object)]
-    if Base.isexported(mod, nameof(object))
-        signature = sprint(show, interface; context=:show_mod=>false)
-        return print(buf, "    export ", signature)
-    else
-        return print(buf, "    public ", interface)
+    stub = getfield(mod, JIEKO_STUB)
+
+    name = binding.var
+    if haskey(stub.consts, name)
+        return print(buf, "    ", stub.consts[name].doc)
+    elseif haskey(stub.macros, name)
+        return print(buf, "    ", stub.macros[name].doc)
+    elseif haskey(stub.structs, name)
+        return print(buf, "    ", stub.structs[name].doc)
     end
+
+    typesig <: Tuple || error("expected typesig, got $typesig")
+    type = Tuple{typeof(object),typesig.parameters...}
+    for (t, method) in stub.interface
+        type <: t && return print(buf, "    ", method.doc)
+    end
+    error("expected @pub on method $type in $mod")
 end
 
-struct InterfaceList <: Abbreviation end
+struct DefList <: Abbreviation end
 
 """
-    const INTERFACE_LIST = InterfaceList()
+$DEF
 
-List all the interface methods of a module. It shows
+List all the `@pub` definitions of a module. It shows
 nothing if the binded object is not a module.
 """
-const INTERFACE_LIST = InterfaceList()
+const DEFLIST = DefList()
 
-function DocStringExtensions.format(::InterfaceList, buf, doc)
+function DocStringExtensions.format(::DefList, buf, doc)
     binding = doc.data[:binding]
     mod = Docs.resolve(binding)
-    mod isa Module || return nothing # NOTE: or error?
+    mod isa Module || error("expected module, got $mod")
+    # NOTE: not error here cuz we may not yet define
+    # those @pub in the module
+    isdefined(mod, JIEKO_STUB) || return nothing
+    if isdefined(mod, :Prelude)
+        println(
+            buf,
+            """
+            ### Prelude
 
-    isdefined(mod, INTERFACE_STUB) || return nothing
-    stub = getfield(mod, INTERFACE_STUB)
-    println(buf, "### Interfaces\n\n")
-    for (name, method) in stub
-        println(buf, "    ", method)
+            Contains $mod.Prelude, all public definitions can be
+            imported by `using $mod.Prelude`.
+            """
+        )
     end
-end
+
+    stub = getfield(mod, JIEKO_STUB)
+    println(buf, "### Definitions\n\n")
+
+    if !isempty(stub.consts)
+        println(buf, "#### Constants\n\n")
+        for (name, captured) in stub.consts
+            println(buf, "    ", captured.doc)
+        end
+    end
+
+    if !isempty(stub.macros)
+        println(buf, "#### Macros\n\n")
+        for (name, captured) in stub.macros
+            println(buf, "    ", captured.doc)
+        end
+    end
+
+    if !isempty(stub.structs)
+        println(buf, "#### Structs\n\n")
+        for (name, captured) in stub.structs
+            println(buf, "    ", captured.doc)
+        end
+    end
+
+    if !isempty(stub.interface)
+        println(buf, "#### Interfaces\n\n")
+        for (type, captured) in stub.interface
+            println(buf, "    ", captured.doc)
+        end
+    end
+end # format

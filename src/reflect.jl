@@ -1,12 +1,12 @@
 """
-$INTERFACE
+$DEF
 
 Return the interface stub storage for a module.
 """
-@interface function interfaces(mod::Module)
-    if isdefined(mod, INTERFACE_STUB)
-        return getfield(mod, INTERFACE_STUB)
+@pub function stub(mod::Module)::JiekoStub
+    if isdefined(mod, JIEKO_STUB)
+        return getfield(mod, JIEKO_STUB)
     else
-        return Dict{Symbol, InterfaceMethod}()
+        return JiekoStub()
     end
 end

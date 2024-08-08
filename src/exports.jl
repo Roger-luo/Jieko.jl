@@ -1,5 +1,5 @@
 """
-    @export_all_interfaces <begin ... end>
+$DEF
 
 Wrap all interfaces from the module in which this macro is called in a `Prelude` module
 and export them. This is useful for exporting all interfaces from a module to be used
@@ -24,23 +24,18 @@ using Jieko.Prelude # load everything you need from Jieko
 @interface foo(x::Float64)::Int = 2
 
 # export interface `foo` and some extra symbols
-@export_all_interfaces begin
-    @interface
-    @export_all_interfaces
-    INTERFACE
-    INTERFACE_LIST
-    not_implemented_error
-end
+@prelude_module
+
 end
 ```
 """
-macro export_all_interfaces()
-    return esc(export_all_interfaces_m(__module__))
+@pub macro prelude_module()
+    return esc(prelude_module_m(__module__))
 end
 
-macro export_all_interfaces(extras)
-    return esc(export_all_interfaces_m(__module__, collect_names(extras)))
-end
+# macro prelude_module(extras)
+#     return esc(prelude_module_m(__module__, collect_names(extras)))
+# end
 
 function relative_using(parent::Symbol, names::Symbol...)
     body = Expr(:(:), Expr(:., :., :., parent))
@@ -50,13 +45,13 @@ function relative_using(parent::Symbol, names::Symbol...)
     return Expr(:using, body)
 end
 
-function export_all_interfaces_m(mod::Module, extras::Vector{Symbol}=Symbol[])
-    isdefined(mod, INTERFACE_STUB) || return nothing
-    stub = getfield(mod, INTERFACE_STUB)
-    stmts = expr_map(stub) do (name, method)
+function prelude_module_m(mod::Module, extras::Vector{Symbol}=Symbol[])
+    isdefined(mod, JIEKO_STUB) || return nothing
+    stub = getfield(mod, JIEKO_STUB)::JiekoStub
+    stmts = expr_map(allcaptured(stub)) do captured
         quote
-            $(relative_using(nameof(mod), method.name))
-            export $(method.name)
+            $(relative_using(nameof(mod), captured.name))
+            export $(captured.name)
         end
     end
 
@@ -67,12 +62,15 @@ function export_all_interfaces_m(mod::Module, extras::Vector{Symbol}=Symbol[])
         end
     end
 
-    return Expr(:toplevel, Expr(:module, true, :Prelude, quote
-        $(relative_using(nameof(mod), nameof(mod)))
-        export $(nameof(mod))
-        $stmts
-        $extra_stmts
-    end))
+    return Expr(:block,
+        Expr(:toplevel, Expr(:module, true, :Prelude, quote
+            $(relative_using(nameof(mod), nameof(mod)))
+            export $(nameof(mod))
+            $stmts
+            $extra_stmts
+        end)),
+        emit_public(:Prelude),
+    )
 end
 
 function collect_names(extras::Expr)::Vector{Symbol}

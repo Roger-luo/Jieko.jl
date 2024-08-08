@@ -1,26 +1,49 @@
+"""
+$DEFLIST
+"""
 module Jieko
 
 if VERSION < v"1.9-"
     using Base: @kwdef
 end
 
-using ExproniconLite: NoDefault, no_default, JLFunction, name_only, expr_map
-using DocStringExtensions: DocStringExtensions, Abbreviation, SIGNATURES, TYPEDEF
+using ExproniconLite: NoDefault, no_default, xcall, name_only, expr_map, split_function, is_function, split_signature
+using DocStringExtensions: DocStringExtensions, Abbreviation, SIGNATURES, TYPEDEF, methodgroups
 
-const INTERFACE_STUB = Symbol("#Jieko##INTERFACE_STUB#")
+const JIEKO_STUB = Symbol("##Jieko#STUB#")
 
-include("interface.jl")
+include("types.jl")
+include("emit/stub.jl")
+include("emit/check.jl")
+include("emit/public.jl")
+include("emit/capture.jl")
 include("doc.jl")
+include("pub.jl")
 include("exports.jl")
 include("reflect.jl")
-include("err.jl")
 
-@export_all_interfaces begin
-    @interface
-    @export_all_interfaces
-    INTERFACE
-    INTERFACE_LIST
-    not_implemented_error
+var"##Jieko#STUB#"[Symbol("@pub")] = CapturedMacro(Jieko, Symbol("@pub"), "@pub <definition>")
+var"##Jieko#STUB#"[:DEF] = CapturedConst(Jieko, :DEF, "DEF")
+var"##Jieko#STUB#"[:DEFLIST] = CapturedConst(Jieko, :DEFLIST, "DEFLIST")
+
+@static if VERSION > v"1.11-"
+    @eval $(Expr(:public, Symbol("@pub")))
+    @eval $(Expr(:public, :DEF))
+    @eval $(Expr(:public, :DEFLIST))
 end
+
+@prelude_module
+
+# include("exports.jl")
+# include("reflect.jl")
+# include("err.jl")
+
+# @export_all_interfaces begin
+#     @interface
+#     @export_all_interfaces
+#     INTERFACE
+#     INTERFACE_LIST
+#     not_implemented_error
+# end
 
 end # Jieko

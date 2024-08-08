@@ -1,6 +1,6 @@
 # common errors
 
-struct NotImplementedError <: Exception end
+@pub struct NotImplementedError <: Exception end
 Base.showerror(io::IO, e::NotImplementedError) = print(io, "Not implemented yet")
 
 """
