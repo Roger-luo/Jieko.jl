@@ -6,6 +6,7 @@ module Example
 include("example/basic.jl")
 include("example/readme.jl")
 include("example/empty.jl")
+include("example/multi.jl")
 end # module
 
 @testset "err" begin
@@ -65,4 +66,8 @@ end
     @test contains(moduledoc, """```julia
     foo(x::Float64) -> Int
     ```""")
+
+    docstr = sprint(show, @doc(Example.Multi.jieko))
+    @test contains(docstr, "jieko(x::Real) -> Int")
+    @test contains(docstr, "jieko(x::MyAliasName) -> Complex")
 end # @testset "doc"

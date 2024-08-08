@@ -35,10 +35,15 @@ function DocStringExtensions.format(::DefSignature, buf, doc)
 
     typesig <: Tuple || error("expected typesig, got $typesig")
     type = Tuple{typeof(object),typesig.parameters...}
-    for (t, method) in stub.interface
-        type <: t && return print(buf, codeblock(method.doc))
+    sig, def = Any, nothing
+    for (t, captured) in stub.interface
+        if type <: t && t <: sig
+            sig = t
+            def = captured
+        end
     end
-    error("expected @pub on method $type in $mod")
+    isnothing(def) && error("expected @pub on method $type in $mod")
+    print(buf, codeblock(def.doc))
 end
 
 struct DefList <: Abbreviation end
