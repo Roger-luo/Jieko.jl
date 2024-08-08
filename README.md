@@ -5,7 +5,7 @@
 [![][docs-stable-img]][docs-stable-url]
 [![][docs-dev-img]][docs-dev-url]
 
-Documentation as interfaces. 接口(Jiekou) is the Chinese word for Interfaces. This one works with the `public` keyword.
+Documentation as interfaces. 接口 (Jiēkǒu) is the Chinese word for interfaces and APIs. This one works with the `public` keyword.
 
 Julia uses docstrings to define interfaces. This is a flexible way of creating interfaces in a dynamic language, but also creates trouble for automation and tooling. Jieko is a package that provides a infrastructure for defining interfaces that works with DocStringExtension with precisely the signature of the interface.
 
@@ -29,20 +29,34 @@ pkg> add Jieko
 
 ## Example
 
-You only need to use the `@interface` macro and if you have [DocStringExtensions](https://github.com/JuliaDocs/DocStringExtensions.jl) setup, you can use the `INTERFACE` stub to generate the interface definition in the docstring similar to the `SIGNATURES` for methods.
+You only need to use the `@pub` macro and if you have [DocStringExtensions](https://github.com/JuliaDocs/DocStringExtensions.jl) setup, you can use the `DEF` stub to generate the interface definition in the docstring similar to the `SIGNATURES` or `TYPEDSIGNATURE` for methods.
 
 ```julia
-using Jieko: @interface, INTERFACE
+using Jieko: @pub, DEF
 
 """
-$INTERFACE
+$DEF
 
 my lovely interface
 """
-@interface jieko(x::Real) = x
+@pub jieko(x::Real) = x
 ```
 
-we can also compare with the `SIGNATURES` from `DocStringExtensions`:
+## Why Jieko?
+
+Julia interfaces and public APIs are defined by documentation. There is no strict requirement
+on which interface an object should implement, but rather the interface is defined by the
+documentation. This is a flexible way of defining interfaces in a dynamic language, but it
+also creates trouble for automation and tooling.
+
+Existing approaches like [Interfaces](https://juliahub.com/ui/Packages/General/Interfaces) approach
+the problem by defining the interface explicitly as an object. This is a good approach for people
+want to define interfaces explicitly and in a more strict way. However, it becomes very verbose and not
+working well with Julia's documenation system.
+
+On the other hand, existing solution in [DocStringExtensions](https://juliahub.com/ui/Packages/General/DocStringExtensions)
+fails to provide the precise interface definition in the docstring. For example, `SIGNATURES` will ignore
+type annotations and only show the method name and argument names.
 
 ```julia
 using DocStringExtensions: SIGNATURES
@@ -65,16 +79,81 @@ search: doc_string_ext
   
 
   my lovely method
-
-help?> jieko
-search: jieko TestJieko
-
-  public Main.jieko(x::Real)
-
-  my lovely interface
 ```
 
-In summary, the `@interface` macro from Jieko records the precise interface signature of your definition in the docstring, instead of guessing them from Julia's method table (`SIGNATURES`). `DocStringExtensions` plugins are provided via `INTERFACE` and `INTERFACE_LIST` to generate the interface definition in the docstring.
+On the other hand, `TYPEDSIGNATURE` can be too verbose, missing the type alias or messing up the return type.
+
+```julia
+using DocStringExtensions: TYPEDSIGNATURES
+
+const MyAliasName = Int
+
+"""
+$TYPEDSIGNATURES
+
+my lovely method
+"""
+doc_string_ext(x::Real)::Int = error("not implemented")
+
+"""
+$TYPEDSIGNATURES
+
+my lovely method
+"""
+doc_string_ext(x::MyAliasName)::Complex = error("not implemented")
+```
+
+this results in the following
+
+```julia
+help?> doc_string_ext
+search: doc_string_ext
+
+  doc_string_ext(x::Real)
+  
+
+  my lovely method
+
+  ─────────────────
+
+  doc_string_ext(x::Int64)
+  
+
+  my lovely method
+```
+
+Using `@pub` and `DEF` fixes the problem as they actually record the precise interface definition.
+
+```julia
+using Jieko: @pub, DEF
+
+const MyAliasName = Int
+
+"""
+$DEF
+"""
+@pub jieko(x::Real)::Int = error("not implemented")
+
+"""
+$DEF
+"""
+@pub jieko(x::MyAliasName)::Complex = error("not implemented")
+```
+
+this results in the following
+
+```julia
+help?> jieko
+search: jieko Jieko
+
+  jieko(x::Real) -> Int
+
+  ─────────────────
+
+  jieko(x::MyAliasName) -> Complex
+```
+
+In summary, the `@pub` macro from Jieko records the precise interface signature of your definition in the docstring, which can be used by tools to generate documentation or check the interface implementation.
 
 See the [documentation](https://Roger-luo.github.io/Jieko.jl/dev/) for more details.
 
