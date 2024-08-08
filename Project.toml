@@ -9,5 +9,5 @@ ExproniconLite = "55351af7-c7e9-48d6-89ff-24e801d99491"
 
 [compat]
 DocStringExtensions = "0.9"
-ExproniconLite = "0.10.6"
+ExproniconLite = "0.10.12"
 julia = "1.6"
