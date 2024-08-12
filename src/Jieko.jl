@@ -8,7 +8,6 @@ if VERSION < v"1.9-"
 end
 
 using ExproniconLite: xcall, name_only, expr_map, split_function, is_function, split_signature
-using DocStringExtensions: DocStringExtensions, Abbreviation, SIGNATURES, TYPEDEF, methodgroups
 
 const JIEKO_STUB = Symbol("##Jieko#STUB#")
 

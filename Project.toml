@@ -4,10 +4,8 @@ authors = ["Roger-luo<rogerluo.rl18@gmail.com>"]
 version = "0.2.0"
 
 [deps]
-DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 ExproniconLite = "55351af7-c7e9-48d6-89ff-24e801d99491"
 
 [compat]
-DocStringExtensions = "0.9"
 ExproniconLite = "0.10.12"
 julia = "1.6"

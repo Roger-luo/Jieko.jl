@@ -1,9 +1,9 @@
-# DocStringExtensions plugin
+# Docs plugin (from DocStringExtensions, but it relies on Git, so...)
 function codeblock(code)
     return "```julia\n$code\n```\n"
 end
 
-struct DefSignature <: Abbreviation end
+struct DefSignature end
 
 """
 $(DefSignature())
@@ -14,7 +14,7 @@ macro.
 """
 const DEF = DefSignature()
 
-function DocStringExtensions.format(::DefSignature, buf, doc)
+function Docs.formatdoc(buf::IOBuffer, doc::Docs.DocStr, ::DefSignature)
     binding = doc.data[:binding]
     typesig = doc.data[:typesig]
     mod = doc.data[:module]
@@ -46,7 +46,7 @@ function DocStringExtensions.format(::DefSignature, buf, doc)
     print(buf, codeblock(def.doc))
 end
 
-struct DefList <: Abbreviation end
+struct DefList end
 
 """
 $DEF
@@ -56,7 +56,7 @@ nothing if the binded object is not a module.
 """
 const DEFLIST = DefList()
 
-function DocStringExtensions.format(::DefList, buf, doc)
+function Docs.formatdoc(buf::IOBuffer, doc::Docs.DocStr, ::DefList)
     binding = doc.data[:binding]
     mod = Docs.resolve(binding)
     mod isa Module || error("expected module, got $mod")
